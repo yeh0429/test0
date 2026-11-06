@@ -41,16 +41,6 @@ try {
   console.error('Firebase configuration is missing:', error);
 }
 
-if (!firebaseConfig || Object.values(firebaseConfig).some(value => String(value).startsWith('YOUR_'))) {
-  const button = document.getElementById('googleSignInBtn');
-  button.disabled = true;
-  button.title = 'Firebase 設定檔載入失敗，請檢查網路或 Pages 部署。';
-  button.textContent = 'Firebase 載入失敗';
-  document.getElementById('profileRole').textContent = 'Firebase 載入失敗';
-  const profileName = document.getElementById('profileName');
-  profileName.textContent = 'Firebase 載入失敗';
-} else {
-
 const auth = getAuth(initializeApp(firebaseConfig));
 const googleProvider = new GoogleAuthProvider();
 const signInButton = document.getElementById('googleSignInBtn');
@@ -95,4 +85,3 @@ onAuthStateChanged(auth, user => {
   if (user && !user?.photoURL) guestAvatar.textContent = displayName.slice(0, 1).toUpperCase();
   if (!user) guestAvatar.textContent = '林';
 });
-}
