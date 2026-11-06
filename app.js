@@ -31,7 +31,7 @@ document.getElementById('commentForm').onsubmit=e=>{e.preventDefault();let text=
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');filterMode=b.dataset.filter;renderTasks()});document.getElementById('searchInput').oninput=e=>{searchTerm=e.target.value;renderTasks()};document.getElementById('prevMonth').onclick=()=>{calendarDate.setMonth(calendarDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calendarDate.setMonth(calendarDate.getMonth()+1);renderCalendar()};document.getElementById('todayBtn').onclick=()=>{calendarDate=new Date(2026,9,30);renderCalendar()};document.getElementById('weekViewBtn').onclick=()=>toast('目前顯示本週行程；可透過新增行程安排團隊時間');document.getElementById('notifyBtn').onclick=()=>toast('目前沒有未讀通知');document.getElementById('activityMore').onclick=()=>toast('已顯示最近的團隊動態');document.querySelectorAll('.nav-item').forEach(a=>a.onclick=()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));a.classList.add('active')});
 const days=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];document.getElementById('todayLabel').textContent=`${days[new Date(2026,9,30).getDay()]}，2026 年 10 月 30 日`;renderTasks();renderCalendar();renderAgenda();renderActivity();
 
-// Firebase Authentication: set Firebase web app values in firebase-config.js (never commit private credentials).
+// Firebase Authentication: load the public web app configuration from firebase-config.public.js.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 let firebaseConfig;
@@ -44,11 +44,11 @@ try {
 if (!firebaseConfig || Object.values(firebaseConfig).some(value => String(value).startsWith('YOUR_'))) {
   const button = document.getElementById('googleSignInBtn');
   button.disabled = true;
-  button.title = '請先依 FIREBASE_SETUP.md 建立 firebase-config.js';
-  button.textContent = '尚未設定 Firebase';
-  document.getElementById('profileRole').textContent = '請設定 Firebase';
+  button.title = 'Firebase 設定檔載入失敗，請檢查網路或 Pages 部署。';
+  button.textContent = 'Firebase 載入失敗';
+  document.getElementById('profileRole').textContent = 'Firebase 載入失敗';
   const profileName = document.getElementById('profileName');
-  profileName.textContent = 'Firebase 尚未設定';
+  profileName.textContent = 'Firebase 載入失敗';
 } else {
 
 const auth = getAuth(initializeApp(firebaseConfig));
