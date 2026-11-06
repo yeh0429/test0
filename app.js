@@ -30,3 +30,69 @@ document.getElementById('eventForm').onsubmit=e=>{e.preventDefault();let f=new F
 document.getElementById('commentForm').onsubmit=e=>{e.preventDefault();let text=new FormData(e.target).get('comment'),t=tasks.find(x=>x.id===activeCommentId);t.comments.push('以安：'+text);activities.unshift({person:'林以安',text:`在 <b>${escapeHtml(t.title)}</b> 留下留言`,time:'剛剛'});renderTasks();renderActivity();e.target.reset();openComments(t.id);toast('留言已送出')};
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');filterMode=b.dataset.filter;renderTasks()});document.getElementById('searchInput').oninput=e=>{searchTerm=e.target.value;renderTasks()};document.getElementById('prevMonth').onclick=()=>{calendarDate.setMonth(calendarDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calendarDate.setMonth(calendarDate.getMonth()+1);renderCalendar()};document.getElementById('todayBtn').onclick=()=>{calendarDate=new Date(2026,9,30);renderCalendar()};document.getElementById('weekViewBtn').onclick=()=>toast('目前顯示本週行程；可透過新增行程安排團隊時間');document.getElementById('notifyBtn').onclick=()=>toast('目前沒有未讀通知');document.getElementById('activityMore').onclick=()=>toast('已顯示最近的團隊動態');document.querySelectorAll('.nav-item').forEach(a=>a.onclick=()=>{document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));a.classList.add('active')});
 const days=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];document.getElementById('todayLabel').textContent=`${days[new Date(2026,9,30).getDay()]}，2026 年 10 月 30 日`;renderTasks();renderCalendar();renderAgenda();renderActivity();
+
+// Firebase Authentication: set Firebase web app values in firebase-config.js (never commit private credentials).
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+let firebaseConfig;
+try {
+  ({ firebaseConfig } = await import('./firebase-config.js'));
+} catch (error) {
+  console.error('Firebase configuration is missing:', error);
+}
+
+if (!firebaseConfig || Object.values(firebaseConfig).some(value => String(value).startsWith('YOUR_'))) {
+  const button = document.getElementById('googleSignInBtn');
+  button.disabled = true;
+  button.title = '請先依 FIREBASE_SETUP.md 建立 firebase-config.js';
+  button.textContent = '尚未設定 Firebase';
+  document.getElementById('profileRole').textContent = '請設定 Firebase';
+  const profileName = document.getElementById('profileName');
+  profileName.textContent = 'Firebase 尚未設定';
+} else {
+
+const auth = getAuth(initializeApp(firebaseConfig));
+const googleProvider = new GoogleAuthProvider();
+const signInButton = document.getElementById('googleSignInBtn');
+const signOutButton = document.getElementById('signOutBtn');
+const userPhoto = document.getElementById('userPhoto');
+const guestAvatar = document.getElementById('guestAvatar');
+const profileName = document.getElementById('profileName');
+
+signInButton.addEventListener('click', async () => {
+  signInButton.disabled = true;
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (error) {
+    console.error('Google sign-in failed:', error);
+    toast(error.code === 'auth/unauthorized-domain'
+      ? '此網域尚未加入 Firebase 授權網域，請至 Firebase Authentication 設定。'
+      : 'Google 登入失敗，請稍後再試。');
+  } finally {
+    signInButton.disabled = false;
+  }
+});
+
+signOutButton.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error('Sign-out failed:', error);
+    toast('登出失敗，請稍後再試。');
+  }
+});
+
+onAuthStateChanged(auth, user => {
+  signInButton.hidden = Boolean(user);
+  signOutButton.hidden = !user;
+  userPhoto.hidden = !user?.photoURL;
+  guestAvatar.hidden = Boolean(user?.photoURL);
+  if (user?.photoURL) userPhoto.src = user.photoURL;
+  const displayName = user?.displayName || user?.email || '使用者';
+  profileName.textContent = user ? displayName : '林以安';
+  document.getElementById('profileRole').textContent = user ? 'Google 帳戶' : '示範帳戶';
+  document.getElementById('welcomeGreeting').textContent = user ? `早安，${displayName}` : '早安，以安';
+  if (user && !user?.photoURL) guestAvatar.textContent = displayName.slice(0, 1).toUpperCase();
+  if (!user) guestAvatar.textContent = '林';
+});
+}
