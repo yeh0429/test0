@@ -36,7 +36,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebas
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 let firebaseConfig;
 try {
-  ({ firebaseConfig } = await import('./firebase-config.js'));
+  ({ firebaseConfig } = await import('./firebase-config.public.js'));
 } catch (error) {
   console.error('Firebase configuration is missing:', error);
 }
